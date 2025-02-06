@@ -1,0 +1,5 @@
+include:
+  - ./clickhouse-setup/docker-compose-minimal.yaml
+  - ./wordpress/docker-compose.yml
+  - ./microfrontend/docker-compose.yml
+  
