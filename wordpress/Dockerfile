@@ -1,10 +1,19 @@
+# Pull in dependencies with composer
+FROM composer:2.5 as build
+COPY composer.json ./
+RUN composer install --ignore-platform-reqs
+
 FROM php:8.3.6-cli-alpine3.19
 
 RUN apk update \
     && apk add curl \
 # install the PHP extensions we need
-    && apk add wget mysql mysql-client php82-mysqli
+    && apk add wget mysql mysql-client php82-mysqli autoconf build-base
 RUN docker-php-ext-install mysqli
+RUN pecl install opentelemetry protobuf
+COPY otel.php.ini $PHP_INI_DIR/conf.d/.
+# Copy in the composer vendor files and autoload.php
+COPY --from=build /app/vendor /var/www/otel
 
 RUN curl https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/bin/wp-cli && chmod +x /usr/bin/wp-cli
 

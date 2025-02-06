@@ -17,6 +17,16 @@ services:
     user: "www-data:www-data"
     volumes:
       - my-contentvolume:/var/local/wordpress/wp-content
+    environment:
+      # OTel auto instrumentation config
+      # https://opentelemetry.io/docs/instrumentation/php/automatic/#installation
+      - OTEL_PHP_AUTOLOAD_ENABLED=true
+      - OTEL_SERVICE_NAME=my-wordpress-installation
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+
   adminer:
     image: adminer
     restart: always
