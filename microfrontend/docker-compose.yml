@@ -1,5 +1,0 @@
-services:
-  microfrontend:
-    build: .
-    ports:
-      - 8002:8002
