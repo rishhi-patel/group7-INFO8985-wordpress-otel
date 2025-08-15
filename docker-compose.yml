@@ -1,6 +1,6 @@
 services:
   db:
-    image: mysql:latest
+    image: mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_USER: wordpress
@@ -8,21 +8,43 @@ services:
       MYSQL_DATABASE: wordpress
     volumes:
       - my-datavolume:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-pexample"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
   wordpress:
     build: .
-    ports:
-      - "8086:8000"
     user: "www-data:www-data"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8086:8080"   # container serves on 8080
+    environment:
+      # --- WordPress DB config ---
+      DB_HOST: db
+      DB_NAME: wordpress
+      DB_USER: wordpress
+      DB_PASSWORD: Secret5555
+
+      # --- Public base URL (adjust if you want the proxy URL) ---
+      WP_HOME: http://localhost:8086
+      WP_SITEURL: http://localhost:8086
+
+      # --- OpenTelemetry ---
+      OTEL_SERVICE_NAME: wordpress-otel
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: https://otel.exotrend.live/v1/traces
+      OTEL_PROPAGATORS: baggage,tracecontext
+      OTEL_RESOURCE_ATTRIBUTES: service.namespace=wordpress,deployment.environment=local
     volumes:
       - my-contentvolume:/var/local/wordpress/wp-content
-    depends_on:
-      - db
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otel.exotrend.live
-      - OTEL_SERVICE_NAME=wordpress-otel
-      - OTEL_TRACES_EXPORTER=otlp
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_PROPAGATORS=baggage,tracecontext
+    restart: unless-stopped
+
 volumes:
   my-datavolume:
   my-contentvolume:

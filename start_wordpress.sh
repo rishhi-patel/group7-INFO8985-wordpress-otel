@@ -1,17 +1,19 @@
-#!/bin/sh
-[ ! -d "wp-content/index.php" ] && cp -r wp-content.bak/* wp-content/
+#!/usr/bin/env sh
+set -e
 
-# Install composer dependencies if not present
-if [ ! -d "vendor" ]; then
-    echo "Installing Composer dependencies..."
-    composer install --no-dev --optimize-autoloader
-fi
+: "${DB_HOST:?Set DB_HOST}"
+: "${DB_USER:?Set DB_USER}"
+: "${DB_PASSWORD:?Set DB_PASSWORD}"
+: "${DB_NAME:=wordpress}"
 
-# Check if vendor directory exists and autoload file is present
-if [ ! -f "vendor/autoload.php" ]; then
-    echo "Error: vendor/autoload.php not found. Installing dependencies..."
-    composer install --no-dev --optimize-autoloader
-fi
+echo "⏳ Waiting for MySQL at ${DB_HOST}..."
+until mariadb -h "$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1" >/dev/null 2>&1; do
+  sleep 2
+done
+echo "✅ DB reachable."
 
-echo "Starting WordPress server..."
-php -S 0.0.0.0:8000
+# Ensure wp-content exists (in case of a blank volume)
+mkdir -p /var/local/wordpress/wp-content
+
+echo "🚀 Starting PHP server on :8080"
+exec php -S 0.0.0.0:8080 -t /var/local/wordpress
