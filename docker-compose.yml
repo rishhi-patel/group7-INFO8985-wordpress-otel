@@ -1,6 +1,6 @@
 services:
   db:
-    image: mysql:8.4
+    image: mysql:latest
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_USER: wordpress
@@ -31,8 +31,8 @@ services:
       DB_PASSWORD: Secret5555
 
       # --- Public base URL (adjust if you want the proxy URL) ---
-      WP_HOME: http://localhost:8086
-      WP_SITEURL: http://localhost:8086
+      WP_HOME: https://w7s.exotrend.live
+      WP_SITEURL: https://w7s.exotrend.live
 
       # --- OpenTelemetry ---
       OTEL_SERVICE_NAME: wordpress-otel
