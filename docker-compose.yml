@@ -15,6 +15,14 @@ services:
     user: "www-data:www-data"
     volumes:
       - my-contentvolume:/var/local/wordpress/wp-content
+    depends_on:
+      - db
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otel.exotrend.live
+      - OTEL_SERVICE_NAME=wordpress-otel
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_PROPAGATORS=baggage,tracecontext
 volumes:
   my-datavolume:
   my-contentvolume:
